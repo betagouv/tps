@@ -1,0 +1,45 @@
+- avis_statut = (@statut == Experts::AvisController::A_DONNER_STATUS) ? 'à donner' : 'rendus'
+- content_for(:title, "Avis #{avis_statut}")
+
+#procedure-show
+  .sub-header
+    .container.flex
+
+      .procedure-logo{ style: "background-image: url(#{@procedure.logo_url})",
+        role: 'img', 'aria-label': "logo de la démarche #{@procedure.libelle}" }
+
+      .procedure-header
+        %h1= procedure_libelle @procedure
+
+        %ul.tabs
+          = tab_item('avis à donner',
+            procedure_expert_avis_index_path(statut: Instructeurs::AvisController::A_DONNER_STATUS),
+            active: @statut == Instructeurs::AvisController::A_DONNER_STATUS,
+            badge: @avis_a_donner.count,
+            notification: @avis_a_donner.any?)
+
+          = tab_item("avis #{'donné'.pluralize(@avis_donnes.count)}",
+            procedure_expert_avis_index_path(statut: Instructeurs::AvisController::DONNES_STATUS),
+            active: @statut == Instructeurs::AvisController::DONNES_STATUS,
+            badge: @avis_donnes.count)
+
+.container
+  - if @avis.present?
+    %table.table.dossiers-table.hoverable
+      %thead
+        %tr
+          %th.number-col Nº dossier
+          %th Demandeur
+          %th Démarche
+      %tbody
+        - @avis.each do |avis|
+          %tr
+            %td.number-col
+              = link_to(instructeur_avis_path(avis.procedure, avis), class: 'cell-link') do
+                %span.icon.folder
+                #{avis.dossier.id}
+            %td= link_to(avis.dossier.user.email, instructeur_avis_path(avis.procedure, avis), class: 'cell-link')
+            %td= link_to(avis.procedure.libelle, instructeur_avis_path(avis.procedure, avis), class: 'cell-link')
+    = paginate(@avis)
+  - else
+    %h2.empty-text Aucun avis

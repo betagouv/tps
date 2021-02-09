@@ -20,7 +20,7 @@ class ApplicationController < ActionController::Base
   before_action :setup_tracking
   before_action :set_locale
 
-  helper_method :multiple_devise_profile_connect?, :instructeur_signed_in?, :current_instructeur,
+  helper_method :multiple_devise_profile_connect?, :instructeur_signed_in?, :current_instructeur, :current_expert, :expert_signed_in?,
     :administrateur_signed_in?, :current_administrateur, :current_account
 
   def staging_authenticate
@@ -32,7 +32,9 @@ class ApplicationController < ActionController::Base
   def multiple_devise_profile_connect?
     user_signed_in? && instructeur_signed_in? ||
         instructeur_signed_in? && administrateur_signed_in? ||
-        user_signed_in? && administrateur_signed_in?
+        instructeur_signed_in? && expert_signed_in? ||
+        user_signed_in? && administrateur_signed_in? ||
+        user_signed_in? && expert_signed_in?
   end
 
   def current_instructeur
@@ -49,6 +51,14 @@ class ApplicationController < ActionController::Base
 
   def administrateur_signed_in?
     current_administrateur.present?
+  end
+
+  def current_expert
+    current_user&.expert
+  end
+
+  def expert_signed_in?
+    current_expert.present?
   end
 
   def current_account
@@ -70,6 +80,8 @@ class ApplicationController < ActionController::Base
   def authenticate_logged_user!
     if instructeur_signed_in?
       authenticate_instructeur!
+    elsif expert_signed_in?
+      authenticate_expert!
     elsif administrateur_signed_in?
       authenticate_administrateur!
     else
@@ -79,6 +91,12 @@ class ApplicationController < ActionController::Base
 
   def authenticate_instructeur!
     if !instructeur_signed_in?
+      redirect_to new_user_session_path
+    end
+  end
+
+  def authenticate_expert!
+    if !expert_signed_in?
       redirect_to new_user_session_path
     end
   end

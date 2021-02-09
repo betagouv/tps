@@ -22,6 +22,11 @@
           = link_to instructeur_procedures_path, class: "menu-item menu-link" do
             = image_tag "icons/switch-profile.svg", alt: ''
             = t('go_instructor', scope: [:layouts])
+      - if expert_signed_in? && nav_bar_profile != :expert
+        %li
+          = link_to expert_all_avis_path, class: "menu-item menu-link" do
+            = image_tag "icons/switch-profile.svg", alt: ''
+            = t('go_expert', scope: [:layouts])
       - if administrateur_signed_in? && nav_bar_profile != :administrateur
         %li
           = link_to admin_procedures_path, class: "menu-item menu-link" do

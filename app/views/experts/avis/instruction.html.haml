@@ -1,0 +1,38 @@
+- content_for(:title, "Avis · Dossier nº #{@dossier.id} (#{@dossier.owner_name})")
+
+= render partial: 'header', locals: { avis: @avis, dossier: @dossier }
+
+.container
+  %section.give-avis
+    %h1.tab-title Donner votre avis
+    %h2.claimant
+      Demandeur :
+      %span.email= @avis.claimant.email
+      %span.date Demande d'avis envoyée le #{l(@avis.created_at, format: '%d/%m/%y')}
+    %p.introduction= @avis.introduction
+
+    - if @avis.introduction_file.attached?
+      = render partial: 'shared/attachment/show', locals: { attachment: @avis.introduction_file.attachment }
+    %br/
+
+    = form_for @avis, url: expert_avis_path(@avis.procedure, @avis), html: { class: 'form' } do |f|
+      = f.text_area :answer, rows: 3, placeholder: 'Votre avis', required: true
+      = text_upload_and_render f, @avis.piece_justificative_file
+
+      .flex.justify-between.align-baseline
+        %p.confidentiel.flex
+          - if @avis.confidentiel?
+            %span.icon.lock
+            %span
+              Cet avis est confidentiel et n'est pas affiché aux autres experts consultés
+          - else
+            %span
+              Cet avis est partagé avec les autres experts
+        .send-wrapper
+          = f.submit 'Envoyer votre avis', class: 'button send'
+
+  - if !@dossier.termine? && !feature_enabled_for?(:expert_not_allowed_to_invite, @avis.procedure)
+    = render partial: "instructeurs/shared/avis/form", locals: { url: avis_expert_avis_path(@avis.procedure, @avis), linked_dossiers: @dossier.linked_dossiers_for(current_expert), must_be_confidentiel: @avis.confidentiel?, avis: @new_avis }
+
+  - if @dossier.avis_for(current_expert).present?
+    = render partial: 'instructeurs/shared/avis/list', locals: { avis: @dossier.avis_for(current_expert), avis_seen_at: nil }

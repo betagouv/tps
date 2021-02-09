@@ -1,0 +1,11 @@
+.sub-header
+  .container
+    %ul.breadcrumbs
+      %li= link_to('Avis', expert_all_avis_path)
+      %li= link_to(dossier.procedure.libelle, procedure_expert_avis_index_path(avis.procedure))
+      %li= link_to("Dossier nº #{dossier.id}", expert_avis_path(avis.procedure, avis))
+
+    %ul.tabs
+      = dynamic_tab_item('Demande', expert_avis_path(avis.procedure, avis))
+      = dynamic_tab_item('Avis', instruction_expert_avis_path(avis.procedure, avis), notification: avis.answer.blank?)
+      = dynamic_tab_item('Messagerie', messagerie_expert_avis_path(avis.procedure, avis))

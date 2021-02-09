@@ -1,7 +1,6 @@
 module Instructeurs
   class ProceduresController < InstructeurController
     before_action :ensure_ownership!, except: [:index]
-    before_action :redirect_to_avis_if_needed, only: [:index]
 
     ITEMS_PER_PAGE = 25
 

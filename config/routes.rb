@@ -285,6 +285,43 @@ Rails.application.routes.draw do
     patch 'update_email' => 'profil#update_email'
   end
 
+
+
+  #
+  # Expert
+  #
+  scope module: 'experts', as: 'expert' do
+    get 'avis', to: 'avis#index', as: 'all_avis'
+
+    # this redirections are ephemeral, to ensure that emails sent to experts before are still valid
+    # TODO : they will be removed in September, 2020
+    get 'avis/:id', to: redirect('/procedures/old/avis/%{id}')
+    get 'avis/:id/sign_up/email/:email', to: redirect("/procedures/old/avis/%{id}/sign_up/email/%{email}"), constraints: { email: /.*/ }
+
+    resources :procedures, only: [ :show], param: :procedure_id do
+      member do
+        resources :avis, only: [:show, :update] do
+          get '', action: 'procedure', on: :collection, as: :procedure
+          member do
+            get 'instruction'
+            get 'messagerie'
+            post 'commentaire' => 'avis#create_commentaire'
+            post 'avis' => 'avis#create_avis'
+            patch 'revoquer'
+            get 'revive'
+            get 'bilans_bdf'
+
+            get 'sign_up/email/:email' => 'avis#sign_up', constraints: { email: /.*/ }, as: 'sign_up'
+            post 'sign_up/email/:email' => 'avis#create_instructeur', constraints: { email: /.*/ }
+          end
+        end
+      end
+    end
+  end
+  
+
+
+
   #
   # Instructeur
   #

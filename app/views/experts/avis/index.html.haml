@@ -1,0 +1,41 @@
+- content_for(:title, "Avis")
+
+.container
+  %h1.page-title Avis
+
+  %ul.procedure-list
+    - @avis_by_procedure.each do |p, procedure_avis|
+      %li.procedure-item.flex.align-start
+        = link_to(procedure_instructeur_avis_index_path(p)) do
+          .flex
+
+            .procedure-logo{ style: "background-image: url(#{p.logo_url})" }
+
+            .procedure-details
+              %p.procedure-title
+                = procedure_libelle p
+              %ul.procedure-stats.flex
+                %li
+                  %object
+                    = link_to(procedure_instructeur_avis_index_path(p, statut: Instructeurs::AvisController::A_DONNER_STATUS)) do
+                      - without_answer_count = procedure_avis.select { |a| a.answer.nil? }.size
+                      - if without_answer_count > 0
+                        %span.notifications{ 'aria-label': "notifications" }
+                      .stats-number
+                        = without_answer_count
+                      .stats-legend
+                        avis à donner
+                %li
+                  %object
+                    = link_to(procedure_instructeur_avis_index_path(p, statut: Instructeurs::AvisController::DONNES_STATUS)) do
+                      - with_answer_count = procedure_avis.select { |a| a.answer.present? }.size
+                      .stats-number= with_answer_count
+                      .stats-legend
+                        = pluralize(with_answer_count, "avis donné")
+
+            - if p.close?
+              .procedure-status
+                %span.label Close
+            - elsif p.depubliee?
+              .procedure-status
+                %span.label Dépubliée
