@@ -1,6 +1,6 @@
-require File.expand_path('boot', __dir__)
+require_relative "boot"
 
-require 'rails/all'
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -10,11 +10,13 @@ Dotenv::Railtie.load
 
 module TPS
   class Application < Rails::Application
+    # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.0
 
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration should go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded.
+    # Configuration for the application, engines, and railties goes here.
+    #
+    # These settings can be overridden in specific environments using the files
+    # in config/environments, which are processed later.
 
     Rails.autoloaders.main.ignore(Rails.root.join('lib/cops'))
     Rails.autoloaders.main.ignore(Rails.root.join('lib/linters'))
@@ -35,8 +37,6 @@ module TPS
     config.assets.paths << Rails.root.join('app', 'assets', 'javascript')
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
     config.assets.precompile += ['.woff']
-
-    config.active_job.queue_adapter = :delayed_job
 
     # The default list used to be accessible through `ActionView::Base.sanitized_allowed_tags`,
     # but a regression in Rails 6.0 makes it unavailable.

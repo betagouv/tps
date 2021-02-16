@@ -1,7 +1,7 @@
 require 'active_job/logging'
 require 'logstash-event'
 
-class ActiveJobLogSubscriber < ::ActiveJob::Logging::LogSubscriber
+class ActiveJobLogSubscriber < ::ActiveJob::LogSubscriber
   def enqueue(event)
     process_event(event, 'enqueue')
   end
