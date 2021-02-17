@@ -3,7 +3,7 @@ class API::V2::DossiersController < API::V2::BaseController
 
   def pdf
     @include_infos_administration = true
-    render(file: 'dossiers/show', formats: [:pdf])
+    render(template: 'dossiers/show', formats: [:pdf])
   end
 
   def geojson
