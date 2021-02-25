@@ -1,0 +1,16 @@
+.two-columns.avis-sign-up
+  .columns-container
+    .column.left
+      %p.description= @dossier.procedure.libelle
+      %p.dossier Dossier nº #{@dossier.id}
+    .column
+      = form_for(User.new, url: { controller: "experts/avis", action: :update_expert }, method: :post, html: { class: "form" }) do |f|
+        %h1 Créez-vous un compte
+
+        = f.label :email, "Email"
+        = f.email_field :email, value: @email, disabled: true
+
+        = f.label :password, "Mot de passe"
+        = f.password_field :password, required: true, placeholder: "#{PASSWORD_MIN_LENGTH} caractères minimum"
+
+        = f.submit "Créer un compte", class: "button large primary expand"

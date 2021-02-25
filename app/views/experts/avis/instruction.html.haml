@@ -31,8 +31,8 @@
         .send-wrapper
           = f.submit 'Envoyer votre avis', class: 'button send'
 
-  - if !@dossier.termine? && !feature_enabled_for?(:expert_not_allowed_to_invite, @avis.procedure)
-    = render partial: "instructeurs/shared/avis/form", locals: { url: avis_expert_avis_path(@avis.procedure, @avis), linked_dossiers: @dossier.linked_dossiers_for(current_expert), must_be_confidentiel: @avis.confidentiel?, avis: @new_avis }
+  - if !@dossier.termine? && !@avis.procedure.feature_enabled?(:expert_not_allowed_to_invite)
+    = render partial: "experts/shared/avis/form", locals: { url: avis_expert_avis_path(@avis.procedure, @avis), linked_dossiers: @dossier.linked_dossiers_for(current_expert), must_be_confidentiel: @avis.confidentiel?, avis: @new_avis }
 
-  - if @dossier.avis_for(current_expert).present?
-    = render partial: 'instructeurs/shared/avis/list', locals: { avis: @dossier.avis_for(current_expert), avis_seen_at: nil }
+  - if @dossier.avis_for_expert(current_expert).present?
+    = render partial: 'experts/shared/avis/list', locals: { avis: @dossier.avis_for_expert(current_expert), avis_seen_at: nil }

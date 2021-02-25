@@ -1,0 +1,38 @@
+%section.list-avis
+  %h1.tab-title
+    Avis des invités
+    %span.count= avis.count
+
+  %ul
+    - avis.each do |avis|
+      %li.one-avis.flex.align-start
+        .width-100
+          %h2.claimant
+            = "#{t('claimant', scope: 'activerecord.attributes.avis')} :"
+            %span.email= (avis.claimant.email == current_expert.email) ? 'Vous' : avis.claimant.email
+            - if avis.confidentiel?
+              %span.confidentiel
+                = t('confidentiel', scope: 'activerecord.attributes.avis')
+                %span.icon.lock{ title: t('confidentiel', scope: 'helpers.hint') }
+            %span.date{ class: highlight_if_unseen_class(avis_seen_at, avis.created_at) }
+              = t('demande_envoyee_le', scope: 'views.shared.avis', date: l(avis.created_at, format: '%d/%m/%y à %H:%M'))
+          %p= avis.introduction
+
+          .answer.flex.align-start
+            %span.icon.bubble.avis-icon
+            .width-100
+              %h2.instructeur
+                = (avis.expert.email == current_expert.email) ? 'Vous' : avis.expert.email
+                - if avis.answer.present?
+                  - if avis.revoked?
+                    %span.waiting{ class: highlight_if_unseen_class(avis_seen_at, avis.revoked_at) }
+                      = t('demande_revoquee_le', scope: 'views.shared.avis', date: l(avis.revoked_at, format: '%d/%m/%y à %H:%M'))
+                  %span.date{ class: highlight_if_unseen_class(avis_seen_at, avis.updated_at) }
+                    = t('reponse_donnee_le', scope: 'views.shared.avis', date: l(avis.updated_at, format: '%d/%m/%y à %H:%M'))
+                - else
+                  %span.waiting
+                    = t('en_attente', scope: 'views.shared.avis')
+              - if avis.piece_justificative_file.attached?
+                = render partial: 'shared/attachment/show', locals: { attachment: avis.piece_justificative_file.attachment }
+              .answer-body
+                = simple_format(avis.answer)
