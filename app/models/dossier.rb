@@ -74,6 +74,7 @@ class Dossier < ApplicationRecord
   has_many :followers_instructeurs, through: :follows, source: :instructeur
   has_many :previous_followers_instructeurs, -> { distinct }, through: :previous_follows, source: :instructeur
   has_many :avis, inverse_of: :dossier, dependent: :destroy
+  has_many :experts, through: :avis
   has_many :traitements, -> { order(:processed_at) }, inverse_of: :dossier, dependent: :destroy
 
   has_many :dossier_operation_logs, -> { order(:created_at) }, inverse_of: :dossier
@@ -475,14 +476,28 @@ class Dossier < ApplicationRecord
     parts.join
   end
 
-  def avis_for(instructeur)
+  def avis_for_instructeur(instructeur)
     if instructeur.dossiers.include?(self)
       avis.order(created_at: :asc)
     else
       avis
         .where(confidentiel: false)
-        .or(avis.where(claimant: instructeur))
+        .or(avis.where(claimant_id: instructeur.id, claimant_type: 'Instructeur'))
         .or(avis.where(instructeur: instructeur))
+        .order(created_at: :asc)
+    end
+  end
+
+  def avis_for_expert(expert)
+    if expert.dossiers.include?(self)
+      avis.order(created_at: :asc)
+    else
+      instructeur = expert.user.instructeur.id if expert.user.instructeur
+      avis
+        .where(confidentiel: false)
+        .or(avis.where(claimant_id: expert.id, claimant_type: 'Expert', tmp_expert_migrated: true))
+        .or(avis.where(claimant_id: instructeur, claimant_type: 'Instructeur', tmp_expert_migrated: false))
+        .or(avis.where(expert: expert))
         .order(created_at: :asc)
     end
   end
@@ -811,9 +826,9 @@ class Dossier < ApplicationRecord
       && PiecesJustificativesService.pieces_justificatives_total_size(self) < Dossier::TAILLE_MAX_ZIP
   end
 
-  def linked_dossiers_for(instructeur)
+  def linked_dossiers_for(instructeur_or_expert)
     dossier_ids = champs.filter(&:dossier_link?).map(&:value).compact
-    (instructeur.dossiers.where(id: dossier_ids) + instructeur.dossiers_from_avis.where(id: dossier_ids)).uniq
+    instructeur_or_expert.dossiers.where(id: dossier_ids)
   end
 
   def hash_for_deletion_mail

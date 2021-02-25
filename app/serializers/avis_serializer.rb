@@ -1,12 +1,11 @@
 class AvisSerializer < ActiveModel::Serializer
-  attributes :email,
-    :answer,
+  attributes :answer,
     :introduction,
     :created_at,
     :answered_at
 
   def email
-    object.email_to_display
+    object.expert.email
   end
 
   def created_at
