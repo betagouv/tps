@@ -285,8 +285,6 @@ Rails.application.routes.draw do
     patch 'update_email' => 'profil#update_email'
   end
 
-
-
   #
   # Expert
   #
@@ -298,7 +296,7 @@ Rails.application.routes.draw do
     get 'avis/:id', to: redirect('/procedures/old/avis/%{id}')
     get 'avis/:id/sign_up/email/:email', to: redirect("/procedures/old/avis/%{id}/sign_up/email/%{email}"), constraints: { email: /.*/ }
 
-    resources :procedures, only: [ :show], param: :procedure_id do
+    resources :procedures, only: [], param: :procedure_id do
       member do
         resources :avis, only: [:show, :update] do
           get '', action: 'procedure', on: :collection, as: :procedure
@@ -307,20 +305,15 @@ Rails.application.routes.draw do
             get 'messagerie'
             post 'commentaire' => 'avis#create_commentaire'
             post 'avis' => 'avis#create_avis'
-            patch 'revoquer'
-            get 'revive'
             get 'bilans_bdf'
 
             get 'sign_up/email/:email' => 'avis#sign_up', constraints: { email: /.*/ }, as: 'sign_up'
-            post 'sign_up/email/:email' => 'avis#create_instructeur', constraints: { email: /.*/ }
+            post 'sign_up/email/:email' => 'avis#update_expert', constraints: { email: /.*/ }
           end
         end
       end
     end
   end
-  
-
-
 
   #
   # Instructeur
@@ -346,16 +339,12 @@ Rails.application.routes.draw do
         resources :avis, only: [:show, :update] do
           get '', action: 'procedure', on: :collection, as: :procedure
           member do
-            get 'instruction'
             get 'messagerie'
             post 'commentaire' => 'avis#create_commentaire'
             post 'avis' => 'avis#create_avis'
             patch 'revoquer'
             get 'revive'
             get 'bilans_bdf'
-
-            get 'sign_up/email/:email' => 'avis#sign_up', constraints: { email: /.*/ }, as: 'sign_up'
-            post 'sign_up/email/:email' => 'avis#create_instructeur', constraints: { email: /.*/ }
           end
         end
 
