@@ -22,24 +22,24 @@
             %span.icon.bubble.avis-icon
             .width-100
               %h2.instructeur
-                = (avis.email_to_display == current_instructeur.email) ? 'Vous' : avis.email_to_display
+                = (avis.expert.email == current_instructeur.email) ? 'Vous' : avis.expert.email
                 - if avis.answer.present?
                   - if avis.revoked?
                     %span.waiting{ class: highlight_if_unseen_class(avis_seen_at, avis.revoked_at) }
                       = t('demande_revoquee_le', scope: 'views.shared.avis', date: l(avis.revoked_at, format: '%d/%m/%y à %H:%M'))
                   - else
                     - if avis.revokable_by?(current_instructeur)
-                      %span.waiting= link_to(t('revoke', scope: 'helpers.label'), revoquer_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revoke', scope: 'helpers.confirmation', email: avis.email_to_display) }, method: :patch)
+                      %span.waiting= link_to(t('revoke', scope: 'helpers.label'), revoquer_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revoke', scope: 'helpers.confirmation', email: avis.expert.email) }, method: :patch)
                   %span.date{ class: highlight_if_unseen_class(avis_seen_at, avis.updated_at) }
                     = t('reponse_donnee_le', scope: 'views.shared.avis', date: l(avis.updated_at, format: '%d/%m/%y à %H:%M'))
                 - else
                   %span.waiting
                     = t('en_attente', scope: 'views.shared.avis')
                     |
-                    %span.waiting= link_to(t('revive', scope: 'helpers.label'), revive_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revive', scope: 'helpers.confirmation', email: avis.email_to_display) })
+                    %span.waiting= link_to(t('revive', scope: 'helpers.label'), revive_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revive', scope: 'helpers.confirmation', email: avis.expert.email) })
                     - if avis.revokable_by?(current_instructeur)
                       |
-                      = link_to(t('revoke', scope: 'helpers.label'), revoquer_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revoke', scope: 'helpers.confirmation', email: avis.email_to_display) }, method: :patch)
+                      = link_to(t('revoke', scope: 'helpers.label'), revoquer_instructeur_avis_path(avis.procedure, avis), data: { confirm: t('revoke', scope: 'helpers.confirmation', email: avis.expert.email) }, method: :patch)
               - if avis.piece_justificative_file.attached?
                 = render partial: 'shared/attachment/show', locals: { attachment: avis.piece_justificative_file.attachment }
               .answer-body
