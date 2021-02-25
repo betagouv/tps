@@ -1,5 +1,5 @@
 - content_for(:title, 'Invitation à donner votre avis')
-- avis_link = @avis.instructeur.present? ? instructeur_avis_url(@avis.procedure, @avis) : sign_up_instructeur_avis_url(@avis.procedure, @avis.id, @avis.email)
+- avis_link = @avis.expert.user.active?.present? ? expert_avis_url(@avis.procedure, @avis) : sign_up_expert_avis_url(@avis.procedure, @avis.id, @avis.expert.email)
 
 - content_for(:footer) do
   Merci de ne pas répondre à cet email. Donnez votre avis
@@ -23,7 +23,7 @@
 %p{ style: "padding: 8px; color: #333333; background-color: #EEEEEE; font-size: 14px;" }
   = @avis.introduction
 
-- if @avis.instructeur.present?
+- if @avis.expert.user.active?.present?
   %p
     = round_button("Donner votre avis", avis_link, :primary)
 - else
