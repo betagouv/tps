@@ -9,6 +9,7 @@
 #  email                :string
 #  introduction         :text
 #  revoked_at           :datetime
+#  tmp_expert_migrated  :boolean          default(FALSE)
 #  created_at           :datetime         not null
 #  updated_at           :datetime         not null
 #  claimant_id          :integer          not null
@@ -23,11 +24,11 @@ class Avis < ApplicationRecord
   belongs_to :instructeur, optional: true
   belongs_to :experts_procedure, optional: true
   belongs_to :claimant, class_name: 'Instructeur', optional: false
-  has_one :procedure, through: :dossier
 
   has_one_attached :piece_justificative_file
   has_one_attached :introduction_file
   has_one :expert, through: :experts_procedure
+  has_one :procedure, through: :experts_procedure
 
   validates :piece_justificative_file,
     content_type: AUTHORIZED_CONTENT_TYPES,
@@ -45,7 +46,7 @@ class Avis < ApplicationRecord
   before_validation -> { sanitize_email(:email) }
   before_create :try_to_assign_instructeur
 
-  default_scope { joins(:dossier) }
+default_scope { joins(:dossier) }
   scope :with_answer, -> { where.not(answer: nil) }
   scope :without_answer, -> { where(answer: nil) }
   scope :for_dossier, -> (dossier_id) { where(dossier_id: dossier_id) }
@@ -56,6 +57,27 @@ class Avis < ApplicationRecord
   # hence this virtual attribute.
   attr_accessor :emails
   attr_accessor :invite_linked_dossiers
+
+  def claimant
+    claimant_id = read_attribute(:claimant_id)
+    claimant_type = read_attribute(:claimant_type)
+    if claimant_type == 'Instructeur' || !tmp_expert_migrated
+      Instructeur.find(claimant_id)
+    else
+      Expert.find(claimant_id).user.expert
+    end
+  end
+
+  def claimant=(claimant)
+    self.claimant_id = claimant.id
+
+    if claimant.is_a? Instructeur
+      self.claimant_type = 'Instructeur'
+    else
+      self.claimant_type = 'Expert'
+      self.tmp_expert_migrated = true
+    end
+  end
 
   def email_to_display
     instructeur&.email || email
@@ -102,7 +124,7 @@ class Avis < ApplicationRecord
       destroy!
     end
   end
-
+  
   private
 
   def try_to_assign_instructeur
