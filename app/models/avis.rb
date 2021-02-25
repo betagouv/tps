@@ -99,7 +99,7 @@ default_scope { joins(:dossier) }
       ['Créé le', :created_at],
       ['Répondu le', :updated_at],
       ['Instructeur', claimant&.email],
-      ['Expert', instructeur&.email]
+      ['Expert', expert&.email]
     ]
   end
 
