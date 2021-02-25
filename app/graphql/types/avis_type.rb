@@ -12,6 +12,6 @@ module Types
     ]
 
     field :instructeur, Types::ProfileType, null: false, method: :claimant
-    field :expert, Types::ProfileType, null: true, method: :instructeur
+    field :expert, Types::ProfileType, null: true
   end
 end

@@ -26,7 +26,7 @@ class API::V2::Schema < GraphQL::Schema
       Types::DossierType
     when Commentaire
       Types::MessageType
-    when Instructeur, User
+    when Instructeur, User, Expert
       Types::ProfileType
     when Individual
       Types::PersonnePhysiqueType
