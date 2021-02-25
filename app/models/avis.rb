@@ -44,9 +44,8 @@ class Avis < ApplicationRecord
   validates :introduction_file, size: { less_than: 20.megabytes }
 
   before_validation -> { sanitize_email(:email) }
-  before_create :try_to_assign_instructeur
 
-default_scope { joins(:dossier) }
+  default_scope { joins(:dossier) }
   scope :with_answer, -> { where.not(answer: nil) }
   scope :without_answer, -> { where(answer: nil) }
   scope :for_dossier, -> (dossier_id) { where(dossier_id: dossier_id) }
@@ -122,16 +121,6 @@ default_scope { joins(:dossier) }
       update!(revoked_at: Time.zone.now)
     else
       destroy!
-    end
-  end
-  
-  private
-
-  def try_to_assign_instructeur
-    instructeur = Instructeur.by_email(email)
-    if instructeur
-      self.instructeur = instructeur
-      self.email = nil
     end
   end
 end

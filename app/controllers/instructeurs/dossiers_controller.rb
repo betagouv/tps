@@ -66,7 +66,7 @@ module Instructeurs
       @following_instructeurs_emails = dossier.followers_instructeurs.map(&:email)
       previous_followers = dossier.previous_followers_instructeurs - dossier.followers_instructeurs
       @previous_following_instructeurs_emails = previous_followers.map(&:email)
-      @avis_emails = dossier.avis.includes(:instructeur).map(&:email_to_display)
+      @avis_emails = dossier.experts.map(&:email)
       @invites_emails = dossier.invites.map(&:email)
       @potential_recipients = dossier.groupe_instructeur.instructeurs.reject { |g| g == current_instructeur }
     end
@@ -181,7 +181,7 @@ module Instructeurs
     end
 
     def create_avis
-      @avis = create_avis_from_params(dossier)
+      @avis = create_avis_from_params(dossier, current_instructeur)
 
       if @avis.nil?
         redirect_to avis_instructeur_dossier_path(procedure, dossier)
