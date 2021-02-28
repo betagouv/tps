@@ -79,7 +79,7 @@ class Avis < ApplicationRecord
   end
 
   def email_to_display
-    instructeur&.email || email
+    expert&.email
   end
 
   def self.link_avis_to_instructeur(instructeur)
