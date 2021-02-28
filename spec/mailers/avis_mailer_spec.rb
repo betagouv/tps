@@ -1,6 +1,10 @@
 RSpec.describe AvisMailer, type: :mailer do
   describe '.avis_invitation' do
-    let(:avis) { create(:avis) }
+    let(:claimant) { create(:instructeur) }
+    let(:expert) { create(:expert) }
+    let(:dossier) { create(:dossier) }
+    let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: dossier.procedure) }
+    let(:avis) { Avis.create(dossier: dossier, claimant: claimant, experts_procedure: experts_procedure, introduction: 'intro') }
 
     subject { described_class.avis_invitation(avis) }
 
@@ -10,12 +14,7 @@ RSpec.describe AvisMailer, type: :mailer do
     it { expect(subject.body).to include(instructeur_avis_url(avis.dossier.procedure.id, avis)) }
 
     context 'when the recipient is not already registered' do
-      before do
-        avis.email = 'instructeur@email.com'
-        avis.instructeur = nil
-      end
-
-      it { expect(subject.body).to include(sign_up_instructeur_avis_url(avis.dossier.procedure.id, avis.id, avis.email)) }
+      it { expect(subject.body).to include(sign_up_expert_avis_url(avis.dossier.procedure.id, avis.id, avis.expert.email)) }
     end
   end
 end

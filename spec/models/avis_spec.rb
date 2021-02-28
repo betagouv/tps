@@ -3,22 +3,16 @@ RSpec.describe Avis, type: :model do
 
   describe '#email_to_display' do
     let(:invited_email) { 'invited@avis.com' }
-    let!(:avis) do
-      avis = create(:avis, email: invited_email, dossier: create(:dossier))
-      avis.instructeur = nil
-      avis
-    end
+    let(:expert) { create(:expert) }
+    let(:procedure) { create(:procedure) }
+    let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: procedure) }
 
     subject { avis.email_to_display }
 
-    context 'when instructeur is not known' do
-      it { is_expected.to eq(invited_email) }
-    end
+    context 'when expert is known' do
+      let!(:avis) { create(:avis, claimant: claimant, dossier: create(:dossier), experts_procedure: experts_procedure) }
 
-    context 'when instructeur is known' do
-      let!(:avis) { create(:avis, email: nil, instructeur: create(:instructeur), dossier: create(:dossier)) }
-
-      it { is_expected.to eq(avis.instructeur.email) }
+      it { is_expected.to eq(avis.expert.email) }
     end
   end
 
@@ -31,28 +25,6 @@ RSpec.describe Avis, type: :model do
       subject { Avis.by_latest }
 
       it { expect(subject).to eq([avis, avis3, avis2]) }
-    end
-  end
-
-  describe ".link_avis_to_instructeur" do
-    let(:instructeur) { create(:instructeur) }
-
-    subject { Avis.link_avis_to_instructeur(instructeur) }
-
-    context 'when there are 2 avis linked by email to a instructeur' do
-      let!(:avis) { create(:avis, email: instructeur.email, instructeur: nil) }
-      let!(:avis2) { create(:avis, email: instructeur.email, instructeur: nil) }
-
-      before do
-        subject
-        avis.reload
-        avis2.reload
-      end
-
-      it { expect(avis.email).to be_nil }
-      it { expect(avis.instructeur).to eq(instructeur) }
-      it { expect(avis2.email).to be_nil }
-      it { expect(avis2.instructeur).to eq(instructeur) }
     end
   end
 
@@ -102,31 +74,14 @@ RSpec.describe Avis, type: :model do
     end
   end
 
-  describe '#try_to_assign_instructeur' do
-    let!(:instructeur) { create(:instructeur) }
-    let(:avis) { create(:avis, claimant: claimant, email: email, dossier: create(:dossier)) }
-
-    context 'when the email belongs to a instructeur' do
-      let(:email) { instructeur.email }
-
-      it { expect(avis.instructeur).to eq(instructeur) }
-      it { expect(avis.email).to be_nil }
-    end
-
-    context 'when the email does not belongs to a instructeur' do
-      let(:email) { 'unknown@email' }
-
-      it { expect(avis.instructeur).to be_nil }
-      it { expect(avis.email).to eq(email) }
-    end
-  end
-
   describe "email sanitization" do
-    subject { Avis.create(claimant: claimant, email: email, dossier: create(:dossier), instructeur: create(:instructeur)) }
+    let(:expert) { create(:expert) }
+    let(:procedure) { create(:procedure) }
+    let!(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: procedure) }
+    subject { Avis.create(claimant: claimant, email: email, experts_procedure: experts_procedure, dossier: create(:dossier)) }
 
     context "when there is no email" do
       let(:email) { nil }
-
       it { expect(subject.email).to be_nil }
     end
 
@@ -191,12 +146,13 @@ RSpec.describe Avis, type: :model do
     let(:procedure) { create(:procedure, :published, instructeurs: instructeurs) }
     let(:dossier) { create(:dossier, :en_instruction, procedure: procedure) }
     let(:claimant_expert) { create(:instructeur) }
-    let(:expert) { create(:instructeur) }
-    let(:another_expert) { create(:instructeur) }
+    let(:expert) { create(:expert) }
+    let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: procedure) }
+    let(:another_expert) { create(:expert) }
 
     context "when avis claimed by an expert" do
-      let(:avis) { create(:avis, dossier: dossier, claimant: claimant_expert, instructeur: expert) }
-      let(:another_avis) { create(:avis, dossier: dossier, claimant: instructeur, instructeur: another_expert) }
+      let(:avis) { create(:avis, dossier: dossier, claimant: claimant_expert, experts_procedure: experts_procedure) }
+      let(:another_avis) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure) }
       it "is revokable by this expert or any instructeurs of the dossier" do
         expect(avis.revokable_by?(claimant_expert)).to be_truthy
         expect(avis.revokable_by?(another_expert)).to be_falsy
@@ -205,8 +161,13 @@ RSpec.describe Avis, type: :model do
     end
 
     context "when avis claimed by an instructeur" do
-      let(:avis) { create(:avis, dossier: dossier, claimant: instructeur, instructeur: expert) }
-      let(:another_avis) { create(:avis, dossier: dossier, claimant: expert, instructeur: another_expert) }
+      let(:expert) { create(:expert) }
+      let(:expert_2) { create(:expert) }
+      let!(:procedure) { create(:procedure, :published, instructeurs: instructeurs) }
+      let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: procedure) }
+      let(:experts_procedure_2) { ExpertsProcedure.create(expert: expert_2, procedure: procedure) }
+      let(:avis) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure) }
+      let(:another_avis) { create(:avis, dossier: dossier, claimant: expert, experts_procedure: experts_procedure_2) }
       let(:another_instructeur) { create(:instructeur) }
       let(:instructeurs) { [instructeur, another_instructeur] }
 

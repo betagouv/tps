@@ -1,6 +1,7 @@
 RSpec.describe ExpertsProcedure, type: :model do
   describe '#invited_expert_emails' do
     let!(:procedure) { create(:procedure, :published) }
+    let(:claimant) { create(:instructeur) }
     let(:expert) { create(:expert) }
     let(:expert2) { create(:expert) }
     let(:expert3) { create(:expert) }
@@ -13,7 +14,7 @@ RSpec.describe ExpertsProcedure, type: :model do
       let!(:dossier) { create(:dossier, procedure: procedure) }
 
       context 'when a procedure has one avis and known instructeur' do
-        let!(:avis) { create(:avis, dossier: dossier, instructeur: create(:instructeur, email: expert.email), experts_procedure: experts_procedure) }
+        let!(:avis) { create(:avis, dossier: dossier, claimant: claimant, experts_procedure: experts_procedure) }
 
         it { is_expected.to eq([experts_procedure]) }
         it { expect(procedure.experts.count).to eq(1) }

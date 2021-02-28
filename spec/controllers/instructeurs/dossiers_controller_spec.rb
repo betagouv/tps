@@ -434,6 +434,8 @@ describe Instructeurs::DossiersController, type: :controller do
   end
 
   describe "#create_avis" do
+    let(:expert) { create(:expert) }
+    let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: dossier.procedure) }
     let(:invite_linked_dossiers) { false }
     let(:saved_avis) { dossier.avis.first }
     let!(:old_avis_count) { Avis.count }
@@ -442,7 +444,7 @@ describe Instructeurs::DossiersController, type: :controller do
       post :create_avis, params: {
         procedure_id: procedure.id,
         dossier_id: dossier.id,
-        avis: { emails: emails, introduction: 'intro', confidentiel: true, invite_linked_dossiers: invite_linked_dossiers }
+        avis: { emails: emails, introduction: 'intro', confidentiel: true, invite_linked_dossiers: invite_linked_dossiers, claimant: instructeur, experts_procedure: experts_procedure }
       }
     end
 
@@ -466,7 +468,7 @@ describe Instructeurs::DossiersController, type: :controller do
         subject
       end
 
-      it { expect(saved_avis.email).to eq('email@a.com') }
+      it { expect(saved_avis.expert.email).to eq('email@a.com') }
       it { expect(saved_avis.introduction).to eq('intro') }
       it { expect(saved_avis.confidentiel).to eq(true) }
       it { expect(saved_avis.dossier).to eq(dossier) }
@@ -493,7 +495,7 @@ describe Instructeurs::DossiersController, type: :controller do
         it { expect(flash.alert).to eq(["toto.fr : Email n'est pas valide"]) }
         it { expect(flash.notice).to eq("Une demande d'avis a été envoyée à titi@titimail.com") }
         it { expect(Avis.count).to eq(old_avis_count + 1) }
-        it { expect(saved_avis.email).to eq("titi@titimail.com") }
+        it { expect(saved_avis.expert.email).to eq("titi@titimail.com") }
       end
 
       context 'with linked dossiers' do
@@ -507,7 +509,7 @@ describe Instructeurs::DossiersController, type: :controller do
           it 'sends a single avis for the main dossier, but doesn’t give access to the linked dossiers' do
             expect(flash.notice).to eq("Une demande d'avis a été envoyée à email@a.com")
             expect(Avis.count).to eq(old_avis_count + 1)
-            expect(saved_avis.email).to eq("email@a.com")
+            expect(saved_avis.expert.email).to eq("email@a.com")
             expect(saved_avis.dossier).to eq(dossier)
           end
         end
@@ -526,7 +528,7 @@ describe Instructeurs::DossiersController, type: :controller do
 
             it 'sends one avis for the main dossier' do
               expect(flash.notice).to eq("Une demande d'avis a été envoyée à email@a.com")
-              expect(saved_avis.email).to eq("email@a.com")
+              expect(saved_avis.expert.email).to eq("email@a.com")
               expect(saved_avis.dossier).to eq(dossier)
             end
 
@@ -540,7 +542,7 @@ describe Instructeurs::DossiersController, type: :controller do
             it 'sends a single avis for the main dossier, but doesn’t give access to the linked dossiers' do
               expect(flash.notice).to eq("Une demande d'avis a été envoyée à email@a.com")
               expect(Avis.count).to eq(old_avis_count + 1)
-              expect(saved_avis.email).to eq("email@a.com")
+              expect(saved_avis.expert.email).to eq("email@a.com")
               expect(saved_avis.dossier).to eq(dossier)
             end
           end
@@ -552,7 +554,9 @@ describe Instructeurs::DossiersController, type: :controller do
   describe "#show" do
     context "when the dossier is exported as PDF" do
       let(:instructeur) { create(:instructeur) }
+      let(:expert) { create(:expert) }
       let(:procedure) { create(:procedure, :published, instructeurs: instructeurs) }
+      let(:experts_procedure) { ExpertsProcedure.create(expert: expert, procedure: procedure) }
       let(:dossier) do
         create(:dossier,
           :accepte,
@@ -562,7 +566,7 @@ describe Instructeurs::DossiersController, type: :controller do
           :with_entreprise,
           :with_commentaires, procedure: procedure)
       end
-      let(:avis) { create(:avis, dossier: dossier, instructeur: instructeur) }
+      let!(:avis) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure) }
 
       subject do
         avis
