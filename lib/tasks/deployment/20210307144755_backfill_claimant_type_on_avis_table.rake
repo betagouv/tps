@@ -8,8 +8,8 @@ namespace :after_party do
 
     without_dossiers = Avis.where(claimant_type: nil).includes(claimant: :assign_to).where(claimant: { assign_tos: { id: nil } })
     without_dossiers.find_each do |avis|
-      claimant = Instructeur.find(avis.claimant_id).user
-      instructeur = Instructeur.find(avis.instructeur) if avis.instructeur
+      claimant = avis.claimant.user
+      instructeur = avis.instructeur
 
       if instructeur && avis.experts_procedure_id.blank?
         User.create_or_promote_to_expert(instructeur.user.email, SecureRandom.hex)
