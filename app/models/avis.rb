@@ -63,7 +63,7 @@ class Avis < ApplicationRecord
     if claimant_type == 'Instructeur' || !tmp_expert_migrated
       Instructeur.find(claimant_id)
     else
-      Expert.find(claimant_id).user.expert
+      Expert.find(claimant_id)
     end
   end
 
