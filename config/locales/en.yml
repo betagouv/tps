@@ -35,6 +35,7 @@ en:
       previous: Previous
       first: First
       truncate: '&hellip;'
+    session: Log on
 
   modal:
     publish:

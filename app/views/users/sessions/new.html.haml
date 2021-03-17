@@ -3,7 +3,7 @@
 .auth-form.sign-in-form
 
   = form_for User.new, url: user_session_path, html: { class: "form" } do |f|
-    %h1.huge-title Connectez-vous
+    %h1.huge-title= t('views.session')
 
     = render partial: 'shared/france_connect_login', locals: { url: france_connect_particulier_path }
 
